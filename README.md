@@ -1,8 +1,19 @@
 # Live reload for neovim
 
-Work in progress
+Work in progress!
 
-## Config for lazy
+Runs a script on file save for a given pattern.
+
+E.g. with this setup, you can live reload your go server when any .go file changes:
+
+```lua
+{
+  pattern = '%.go$',
+  exec = 'go run main.go',
+}
+```
+
+## Install for lazy
 
 ```lua
 return {
@@ -22,3 +33,11 @@ return {
   },
 }
 ```
+
+## Commands
+
+- `LiveReloadTermShow`
+- `LiveReloadTermKill`
+- `LiveReloadEnable`
+- `LiveReloadDisable`
+- `LiveReloadState`
