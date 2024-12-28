@@ -16,7 +16,7 @@ E.g. with this setup, you can live reload your go server when any .go file chang
 ## Install for lazy
 
 ```lua
-return {
+{
   -- dir = vim.fn.expand '~' .. '/projects/live-reload.nvim/', -- only for local dev
   'peterszarvas94/live-reload.nvim'
   opts = {

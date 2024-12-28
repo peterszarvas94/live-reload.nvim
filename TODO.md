@@ -1,1 +1,2 @@
-- detect any file change not just the saved one
+- [ ] detect any file change not just the saved one
+- [ ] fix usecommands: state, show and kill
