@@ -22,13 +22,13 @@ M._setup = function()
 		return
 	end
 
-	vim.api.nvim_create_user_command("LiveReloadTermShow", function()
-		if utils.state.buf ~= -1 and vim.api.nvim_buf_is_valid(utils.state.buf) then
-			vim.api.nvim_set_current_buf(utils.state.buf)
-		else
-			print("No buf")
-		end
-	end, {})
+	-- vim.api.nvim_create_user_command("LiveReloadTermShow", function()
+	-- 	if utils.state.buf ~= -1 and vim.api.nvim_buf_is_valid(utils.state.buf) then
+	-- 		vim.api.nvim_set_current_buf(utils.state.buf)
+	-- 	else
+	-- 	  print("No buf")
+	-- 	end
+	-- end, {})
 
 	vim.api.nvim_create_user_command("LiveReloadTermKill", function()
 		if #pairs(utils.state) == 0 then

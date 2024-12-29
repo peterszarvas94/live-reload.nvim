@@ -37,6 +37,7 @@ M.setup = function(opts)
 	require("live-reload.utils")._init(M)._setup()
 	require("live-reload.autocommands")._init(M)._setup()
 	require("live-reload.usercommands")._init(M)._setup()
+	require("live-reload.telescope")._init(M)._setup()
 end
 
 M.enable = function()
