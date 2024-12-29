@@ -35,8 +35,8 @@ M.setup = function(opts)
 	M.config = vim.tbl_deep_extend("force", default_config, opts or {})
 
 	require("live-reload.utils")._init(M)._setup()
-	require("live-reload.autocommands")._init(M)._setup()
-	require("live-reload.usercommands")._init(M)._setup()
+	require("live-reload.watcher")._init(M)._setup()
+	require("live-reload.user_commands")._init(M)._setup()
 	require("live-reload.telescope")._setup()
 end
 

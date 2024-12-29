@@ -22,20 +22,13 @@ M._setup = function()
 		return
 	end
 
-	-- vim.api.nvim_create_user_command("LiveReloadTermShow", function()
-	-- 	if utils.state.buf ~= -1 and vim.api.nvim_buf_is_valid(utils.state.buf) then
-	-- 		vim.api.nvim_set_current_buf(utils.state.buf)
-	-- 	else
-	-- 	  print("No buf")
-	-- 	end
-	-- end, {})
-
 	vim.api.nvim_create_user_command("LiveReloadTermKill", function()
-		if #pairs(utils.state) == 0 then
+		if vim.tbl_count(utils.state) == 0 then
 			print("No buf")
 		else
-			for _, value in pairs(utils.state) do
-				utils.kill_job_and_buff(value.buf)
+			for key, value in pairs(utils.state) do
+				utils.buf_delete(value.buf)
+				utils.state[key] = nil
 				print("Killed", value.buf)
 			end
 		end
@@ -56,6 +49,14 @@ M._setup = function()
 			print("Live reload is enabled")
 		else
 			print("Live reload is disabled")
+		end
+
+		-- TODO: print more state
+	end, {})
+
+	vim.api.nvim_create_user_command("LiveReloadStart", function()
+		if M.module.config.enabled then
+			utils.start()
 		end
 
 		-- TODO: print more state

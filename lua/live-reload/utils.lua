@@ -10,6 +10,7 @@ local run_job = function(exec)
 	vim.api.nvim_set_current_buf(current_buf)
 
 	-- reset cursor
+	-- vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Right><Esc>", true, false, true), "n", true)
 
 	return { buf = buf }
@@ -30,6 +31,7 @@ end
 ---@field buf_delete fun(buf: number)
 ---@field get_runner_by_match fun(filepath: string): Runner?
 ---@field run_terminal fun(pattern: string, exec: string)
+---@field start fun()
 
 ---@type Utils
 ---@diagnostic disable-next-line: missing-fields
@@ -70,7 +72,7 @@ M._setup = function()
 	end
 
 	M.run_terminal = function(pattern, exec)
-		-- already in state, kill job and buff
+		-- already in state, kill buff
 		-- PERF: reuse buffer, don't recreate
 		if M.state[pattern] then
 			M.buf_delete(M.state[pattern].buf)
@@ -84,6 +86,12 @@ M._setup = function()
 			buf = job.buf,
 			exec = exec,
 		}
+	end
+
+	M.start = function()
+		for _, runner in ipairs(M.module.config.runners) do
+			M.run_terminal(runner.pattern, runner.exec)
+		end
 	end
 end
 
