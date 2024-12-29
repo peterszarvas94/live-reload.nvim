@@ -67,7 +67,7 @@ M._setup = function()
 			:find()
 	end
 
-	vim.api.nvim_create_user_command("LiveReloadTermShow", function()
+	vim.api.nvim_create_user_command("LiveReloadBuffers", function()
 		M.telescope_picker()
 	end, {})
 end

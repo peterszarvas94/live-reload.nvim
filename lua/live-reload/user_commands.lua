@@ -22,7 +22,7 @@ M._setup = function()
 		return
 	end
 
-	vim.api.nvim_create_user_command("LiveReloadTermKill", function()
+	vim.api.nvim_create_user_command("LiveReloadKill", function()
 		if vim.tbl_count(utils.state) == 0 then
 			print("No buf")
 		else
