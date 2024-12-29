@@ -41,7 +41,7 @@ M._setup = function()
 
 		pickers
 			.new({}, {
-				prompt_title = "Live reload terminals",
+				prompt_title = "Live reload buffers",
 				finder = finders.new_table({
 					results = get_buffers(),
 					entry_maker = function(entry)
