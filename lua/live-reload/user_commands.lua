@@ -45,13 +45,8 @@ M._setup = function()
 	end, {})
 
 	vim.api.nvim_create_user_command("LiveReloadState", function()
-		if M.module.config.enabled then
-			print("Live reload is enabled")
-		else
-			print("Live reload is disabled")
-		end
-
-		-- TODO: print more state
+		print("Config:\n", vim.inspect(M.module.config))
+		print("State:\n", vim.inspect(utils.state))
 	end, {})
 
 	vim.api.nvim_create_user_command("LiveReloadStart", function()

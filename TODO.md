@@ -1,2 +1,4 @@
-- [ ] detect any file change not just the saved one
-- [ ] fix usecommands: state, show and kill
+- [x] detect any file change not just the saved one
+- [x] fix usecommands: state, show and kill
+- [ ] load config from toml file
+- [ ] feat: one time runners at start (e.g. --watch jobs)

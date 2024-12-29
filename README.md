@@ -13,7 +13,9 @@ E.g. with this setup, you can live reload your go server when any .go file chang
 }
 ```
 
-## Install for lazy
+## Install
+
+### Lazy
 
 ```lua
 {
@@ -27,24 +29,13 @@ E.g. with this setup, you can live reload your go server when any .go file chang
     'nvim-lua/plenary.nvim'
   }
   config = function()
-    local dir = vim.fn.expand '~' .. '/my-project/'
-    local tw_config = dir .. 'tailwind.config.js'
-    local tw_input = dir .. 'tailwind.base.css'
-    local tw_output = dir .. 'style.css'
-
-    local tw_fn = 'tailwindcss -c ' .. tw_config .. ' -i ' .. tw_input .. ' -o ' .. tw_output
-
     require('live-reload').setup {
       enabled = true,
       runners = {
-        {
-          pattern = '%.templ$',
-          exec = 'templ generate && ' .. tw_fn,
-        },
-        {
-          pattern = '%.go$',
-          exec = 'go run cmd/*.go',
-        },
+        -- {
+        --   pattern = '%.go$',
+        --   exec = 'go run cmd/*.go',
+        -- },
       },
     }
 
@@ -53,6 +44,44 @@ E.g. with this setup, you can live reload your go server when any .go file chang
     vim.keymap.set('n', '<leader>lk', ':LiveReloadKill<CR>', { desc = '[L]iveReload[K]ill', silent = true })
   end,
 }
+```
+
+### Load project specific runners
+
+You can use a lua config file for your project. You need to create `live-reload.lua` at the root directory of your project. This file must return a runner list.
+
+E.g. `~/my-project/live-reload.lua`:
+
+```lua
+---@class Runner
+---@field pattern string
+---@field exec string
+
+---@return Runner[]
+local get_runners = function()
+  local dir = vim.fn.expand("~") .. "/my-project/"
+  local tw_config = dir .. "tailwind.config.js"
+  local tw_input = dir .. "tailwind.base.css"
+  local tw_output = dir .. "style.css"
+
+  local tw_fn = "tailwindcss -c " .. tw_config .. " -i " .. tw_input .. " -o " .. tw_output
+
+  ---@type Runner[]
+  local runners = {
+    {
+      pattern = "%.templ$",
+      exec = "templ generate && " .. tw_fn,
+    },
+    {
+      pattern = "%.go$",
+      exec = "go run cmd/*.go",
+    },
+  }
+
+  return runners
+end
+
+return get_runners()
 ```
 
 ## Commands
