@@ -1,4 +1,4 @@
 - [x] detect any file change not just the saved one
 - [x] fix usecommands: state, show and kill
-- [ ] load config from toml file
+- [x] load config from lua file
 - [ ] feat: one time runners at start (e.g. --watch jobs)
