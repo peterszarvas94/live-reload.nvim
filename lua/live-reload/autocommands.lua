@@ -22,19 +22,51 @@ M._setup = function()
 		return
 	end
 
-	vim.api.nvim_create_autocmd("BufWritePost", {
-		pattern = "*",
-		callback = function()
-			if M.module.config.enabled == false then
-				-- live reload is disabled
-				return
-			else
-				-- live reload is enabled
-				local runner = utils.get_current_runner_by_match()
-				if runner ~= nil then
+	local uv = vim.loop
+
+	local watcher = uv.new_fs_event()
+
+	local path_to_watch = uv.cwd() -- Watch the current working directory
+
+	local last_event_time = 0
+	local debounce_ms = 100
+
+	---@diagnostic disable-next-line: unused-local
+	watcher:start(path_to_watch, { recursive = true }, function(err, fname, status)
+		if err then
+			print("Error watching files:", err)
+			return
+		end
+
+		if not M.module.config.enabled then
+			return
+		end
+
+		-- Filter out Vim's temporary files
+		if fname:match("4913$") then
+			return
+		end
+
+		local current_time = uv.now()
+		if (current_time - last_event_time) < debounce_ms then
+			return
+		end
+		last_event_time = current_time
+
+		vim.defer_fn(function()
+			vim.schedule(function()
+				local runner = utils.get_runner_by_match(fname)
+				if runner and fname then
 					utils.run_terminal(runner.pattern, runner.exec)
 				end
-			end
+			end)
+		end, 100)
+	end)
+
+	vim.api.nvim_create_autocmd("VimLeavePre", {
+		callback = function()
+			watcher:stop()
+			watcher:close()
 		end,
 	})
 end

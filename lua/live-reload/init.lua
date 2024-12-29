@@ -6,16 +6,6 @@
 ---@field enabled boolean
 ---@field runners Runner[]
 
----@class Module
----@field config Config
----@field setup fun(opts?: Config)
----@field enable fun()
----@field disable fun()
-
----@type Module
----@diagnostic disable-next-line: missing-fields
-local M = {}
-
 ---@type Config
 local default_config = {
 	enabled = false,
@@ -29,6 +19,16 @@ local default_config = {
 	},
 }
 
+---@class Module
+---@field config Config
+---@field setup fun(opts?: Config)
+---@field enable fun()
+---@field disable fun()
+
+---@type Module
+---@diagnostic disable-next-line: missing-fields
+local M = {}
+
 M.config = default_config
 
 M.setup = function(opts)
@@ -37,7 +37,7 @@ M.setup = function(opts)
 	require("live-reload.utils")._init(M)._setup()
 	require("live-reload.autocommands")._init(M)._setup()
 	require("live-reload.usercommands")._init(M)._setup()
-	require("live-reload.telescope")._init(M)._setup()
+	require("live-reload.telescope")._setup()
 end
 
 M.enable = function()

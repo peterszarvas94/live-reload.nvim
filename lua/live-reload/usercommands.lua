@@ -35,7 +35,7 @@ M._setup = function()
 			print("No buf")
 		else
 			for _, value in pairs(utils.state) do
-				utils.kill_job_and_buff(value.job_id, value.buf)
+				utils.kill_job_and_buff(value.buf)
 				print("Killed", value.buf)
 			end
 		end
