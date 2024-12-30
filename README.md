@@ -19,8 +19,8 @@ E.g. with this setup, you can live reload your go server when any .go file chang
 
 ```lua
 {
-  dir = vim.fn.expand '~' .. '/projects/live-reload.nvim/',
-  -- 'peterszarvas94/live-reload.nvim',
+  'peterszarvas94/live-reload.nvim',
+  -- if you want to use "LiveReloadBuffers"
   dependencies = {
     { 'nvim-telescope/telescope.nvim', tag = '0.1.8' },
     'nvim-lua/plenary.nvim',
