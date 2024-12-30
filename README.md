@@ -20,7 +20,7 @@ E.g. with this setup, you can live reload your go server when any .go file chang
 ```lua
 {
   'peterszarvas94/live-reload.nvim',
-  -- if you want to use "LiveReloadBuffers"
+  -- telescope (and so plenary) is optional, but it's needed for "LiveReloadBuffers":
   dependencies = {
     { 'nvim-telescope/telescope.nvim', tag = '0.1.8' },
     'nvim-lua/plenary.nvim',
