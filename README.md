@@ -49,7 +49,7 @@ E.g. `~/my-project/live-reload.lua`:
 ---@field exec string
 
 ---@return Runner[]
-local dir = vim.fn.expand("~") .. "/projects/test-go/"
+local dir = vim.fn.expand("~") .. "/my-project/"
 local tw_config = dir .. "tailwind.config.js"
 local tw_input = dir .. "tailwind.base.css"
 local tw_output = dir .. "style.css"
