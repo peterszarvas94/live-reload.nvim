@@ -19,29 +19,19 @@ E.g. with this setup, you can live reload your go server when any .go file chang
 
 ```lua
 {
-  -- from local:
-  -- dir = vim.fn.expand '~' .. '/projects/live-reload.nvim/',
-  -- from remote:
-  'peterszarvas94/live-reload.nvim'
-  -- if you want to use telescope picker (LiveReloadBuffers):
+  dir = vim.fn.expand '~' .. '/projects/live-reload.nvim/',
+  -- 'peterszarvas94/live-reload.nvim',
   dependencies = {
     { 'nvim-telescope/telescope.nvim', tag = '0.1.8' },
-    'nvim-lua/plenary.nvim'
-  }
+    'nvim-lua/plenary.nvim',
+  },
   config = function()
-    require('live-reload').setup {
-      enabled = true,
-      runners = {
-        -- {
-        --   pattern = '%.go$',
-        --   exec = 'go run cmd/*.go',
-        -- },
-      },
-    }
+    require('live-reload').setup {}
 
-    vim.keymap.set('n', '<leader>ls', ':LiveReloadStart<CR>', { desc = '[L]iveReload[S]tart', silent = true })
-    vim.keymap.set('n', '<leader>lb', ':LiveReloadBuffers<CR>', { desc = '[L]iveReload[B]uffers', silent = true })
-    vim.keymap.set('n', '<leader>lk', ':LiveReloadKill<CR>', { desc = '[L]iveReload[K]ill', silent = true })
+    vim.keymap.set('n', '<leader>ls', ':LiveReloadStart<CR>', { desc = '[L]ive reload [S]tart', silent = true })
+    vim.keymap.set('n', '<leader>lt', ':LiveReloadState<CR>', { desc = '[L]ive reload s[T]ate', silent = true })
+    vim.keymap.set('n', '<leader>lb', ':LiveReloadBuffers<CR>', { desc = '[L]ive reload [B]uffers', silent = true })
+    vim.keymap.set('n', '<leader>lp', ':LiveReloadStop<CR>', { desc = '[L]ive reload sto[P]', silent = true })
   end,
 }
 ```
@@ -54,40 +44,40 @@ E.g. `~/my-project/live-reload.lua`:
 
 ```lua
 ---@class Runner
----@field pattern string
+---@field pattern? string
+---@field once? boolean
 ---@field exec string
 
 ---@return Runner[]
-local get_runners = function()
-  local dir = vim.fn.expand("~") .. "/my-project/"
-  local tw_config = dir .. "tailwind.config.js"
-  local tw_input = dir .. "tailwind.base.css"
-  local tw_output = dir .. "style.css"
+local dir = vim.fn.expand("~") .. "/projects/test-go/"
+local tw_config = dir .. "tailwind.config.js"
+local tw_input = dir .. "tailwind.base.css"
+local tw_output = dir .. "style.css"
 
-  local tw_fn = "tailwindcss -c " .. tw_config .. " -i " .. tw_input .. " -o " .. tw_output
+local tw_fn = "tailwindcss -c " .. tw_config .. " -i " .. tw_input .. " -o " .. tw_output .. " --watch"
 
-  ---@type Runner[]
-  local runners = {
-    {
-      pattern = "%.templ$",
-      exec = "templ generate && " .. tw_fn,
-    },
-    {
-      pattern = "%.go$",
-      exec = "go run cmd/*.go",
-    },
-  }
+---@type Runner[]
+local runners = {
+  {
+    once = true,
+    exec = tw_fn,
+  },
+  {
+    once = true,
+    exec = "templ generate --watch",
+  },
+  {
+    pattern = "%.go$",
+    exec = "go run cmd/*.go",
+  },
+}
 
-  return runners
-end
-
-return get_runners()
+return runners
 ```
 
 ## Commands
 
-- `LiveReloadBuffers`
-- `LiveReloadKill`
-- `LiveReloadEnable`
-- `LiveReloadDisable`
-- `LiveReloadState`
+- `LiveReloadStart`: start
+- `LiveReloadStop`: stop
+- `LiveReloadState`: print state
+- `LiveReloadBuffers`: select running terminals with [telescope](https://github.com/nvim-telescope/telescope.nvim)

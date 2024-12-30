@@ -1,45 +1,55 @@
 local utils = require("live-reload.utils")
+local state = require("live-reload.state")
 
----@class AutoCommands
----@field module Module
----@field _init fun(module: Module): AutoCommands
----@field _setup fun()
+---@class WatcherState
+---@field last_event_time number
+---@field last_fname string
+---@field debounce_ms number
 
----@type AutoCommands
+---@class Watcher
+---@field state WatcherState
+---@field start fun(config: Config)
+
+---@type Watcher
 ---@diagnostic disable-next-line: missing-fields
 local M = {}
 
-M.module = nil
+M.state = {
+	last_event_time = 0,
+	last_fname = "",
+	debounce_ms = 1000,
+}
 
-M._init = function(module)
-	M.module = module
-	return M
-end
+M.start = function(config)
+	assert(not state.running)
 
-local last_event_time = 0
-local last_fname = ""
-local debounce_ms = 1000
+	state.running = true
 
-M._setup = function()
-	if M.module == nil then
-		print("Module is not set up in autocommands")
-		return
+	--- start all runners
+	for _, runner in ipairs(config.runners) do
+		if (runner.pattern and runner.once) or (not runner.pattern and not runner.once) then
+			print('Invalid configuration: set either "pattern" or "once", but not both or neither')
+			goto continue
+		end
+
+		if runner.pattern then
+			utils.run_watch(runner.pattern, runner.exec)
+		elseif runner.once then
+			utils.run_once(runner.exec)
+		end
+
+		::continue::
 	end
 
+	--- start file watcher
 	local uv = vim.loop
-
 	local watcher = uv.new_fs_event()
-
-	local path_to_watch = uv.cwd() -- Watch the current working directory
+	local path_to_watch = uv.cwd()
 
 	---@diagnostic disable-next-line: unused-local
 	watcher:start(path_to_watch, { recursive = true }, function(err, fname, status)
 		if err then
 			print("Error watching files:", err)
-			return
-		end
-
-		if not M.module.config.enabled then
 			return
 		end
 
@@ -49,20 +59,21 @@ M._setup = function()
 		end
 
 		local current_time = uv.now()
-		if (current_time - last_event_time) < debounce_ms and last_fname == fname then
+		if
+			(current_time - M.state.last_event_time) < M.state.debounce_ms
+			and M.state.last_fname == fname
+		then
 			return
 		end
 
-		last_event_time = current_time
-		last_fname = fname
+		M.state.last_event_time = current_time
+		M.state.last_fname = fname
 
-		local runner = utils.get_runner_by_match(fname)
+		local runner = utils.get_runner_by_match(fname, config)
 
 		vim.schedule(function()
 			if runner ~= nil then
-				utils.run_terminal(runner.pattern, runner.exec)
-				print("fname: ", fname)
-				print("runner running: ", runner.exec)
+				utils.run_watch(runner.pattern, runner.exec)
 			end
 		end)
 	end)

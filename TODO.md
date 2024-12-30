@@ -1,4 +1,5 @@
 - [x] detect any file change not just the saved one
 - [x] fix usecommands: state, show and kill
 - [x] load config from lua file
-- [ ] feat: one time runners at start (e.g. --watch jobs)
+- [x] feat: one time runners at start (e.g. --watch jobs)
+- [ ] not just pattern but custom matching function(filename) -> boolean

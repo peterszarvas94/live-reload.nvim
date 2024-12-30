@@ -1,61 +1,66 @@
 local utils = require("live-reload.utils")
+local state = require("live-reload.state")
+local telescope = require("live-reload.telescope")
+local watcher = require("live-reload.watcher")
 
 ---@class UserCommands
----@field module Module
----@field _init fun(module: Module): UserCommands
----@field _setup fun()
+---@field _setup fun(config: Config)
 
 ---@type UserCommands
 ---@diagnostic disable-next-line: missing-fields
 local M = {}
 
-M.module = nil
-
-M._init = function(module)
-	M.module = module
-	return M
-end
-
-M._setup = function()
-	if M.module == nil then
-		print("Module is not set up in usercommands")
-		return
-	end
-
-	vim.api.nvim_create_user_command("LiveReloadKill", function()
-		if vim.tbl_count(utils.state) == 0 then
-			print("No buf")
-		else
-			for key, value in pairs(utils.state) do
-				utils.buf_delete(value.buf)
-				utils.state[key] = nil
-				print("Killed", value.buf)
-			end
+M._setup = function(config)
+	vim.api.nvim_create_user_command("LiveReloadStart", function()
+		if state.running then
+			print("Live reload is already running")
+			return
 		end
+
+		if not state.running and #config.runners == 0 then
+			print("There are no runners set up")
+			return
+		end
+
+		watcher.start(config)
 	end, {})
 
-	vim.api.nvim_create_user_command("LiveReloadEnable", function()
-		M.module.enable()
-		print("Live reload is enabled")
-	end, {})
+	vim.api.nvim_create_user_command("LiveReloadStop", function()
+		assert(vim.tbl_count(state.reload_runners) > 0 or #state.once_runners > 0)
 
-	vim.api.nvim_create_user_command("LiveReloadDisable", function()
-		M.module.disable()
-		print("Live reload is disabled")
+		if not state.running then
+			print("Live reload is not running")
+			return
+		end
+
+		for _, terminal in pairs(state.reload_runners) do
+			utils.buf_delete(terminal.buf)
+		end
+
+		for _, terminal in ipairs(state.once_runners) do
+			utils.buf_delete(terminal.buf)
+		end
+
+		state:reset()
+
+		print("All live-reload buffers are deleted")
 	end, {})
 
 	vim.api.nvim_create_user_command("LiveReloadState", function()
-		print("Config:\n", vim.inspect(M.module.config))
-		print("State:\n", vim.inspect(utils.state))
+		print("Config:\n", vim.inspect(config))
+		print("State:\n", vim.inspect(state))
 	end, {})
 
-	vim.api.nvim_create_user_command("LiveReloadStart", function()
-		if M.module.config.enabled then
-			utils.start()
-		end
+	if telescope.is_installed() then
+		vim.api.nvim_create_user_command("LiveReloadBuffers", function()
+			if not state.running then
+				print("Live reload not running")
+				return
+			end
 
-		-- TODO: print more state
-	end, {})
+			telescope.picker()
+		end, {})
+	end
 end
 
 return M

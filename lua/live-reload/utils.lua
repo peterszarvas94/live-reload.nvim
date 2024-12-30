@@ -1,3 +1,5 @@
+local state = require("live-reload.state")
+
 ---@param exec string
 ---@return {buf: number}
 local run_job = function(exec)
@@ -10,89 +12,75 @@ local run_job = function(exec)
 	vim.api.nvim_set_current_buf(current_buf)
 
 	-- reset cursor
-	-- vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Right><Esc>", true, false, true), "n", true)
 
 	return { buf = buf }
 end
 
----@class TerminalInfo
----@field buf number
----@field exec string
-
----@class State
----@field [string] TerminalInfo
-
 ---@class Utils
----@field module Module
----@field _init fun(module: Module): Utils
----@field _setup fun()
----@field state State
 ---@field buf_delete fun(buf: number)
----@field get_runner_by_match fun(filepath: string): Runner?
----@field run_terminal fun(pattern: string, exec: string)
----@field start fun()
+---@field get_runner_by_match fun(filepath: string, config: Config): Runner?
+---@field run_watch fun(pattern: string, exec: string)
+---@field run_once fun(exec: string)
 
 ---@type Utils
 ---@diagnostic disable-next-line: missing-fields
 local M = {}
 
-M.state = {
-	--[[
-	some_pattern = {
-		buf = -1,
-		exec = ""
-	},
-	]]
-}
+M.buf_delete = function(buf)
+	assert(state.running)
 
-M._init = function(module)
-	M.module = module
-	return M
+	if vim.api.nvim_buf_is_valid(buf) then
+		vim.api.nvim_buf_delete(buf, { force = true })
+	end
 end
 
-M._setup = function()
-	if M.module == nil then
-		print("Module is not setup for utils")
+M.get_runner_by_match = function(filepath, config)
+	assert(state.running)
+
+	---@type Runner?
+	local runner = nil
+	for _, config_runner in ipairs(config.runners) do
+		if config_runner.pattern and filepath:match(config_runner.pattern) ~= nil and runner == nil then
+			runner = config_runner
+		end
+	end
+	return runner
+end
+
+M.run_watch = function(pattern, exec)
+	assert(state.running)
+
+	if state.reload_runners[pattern] then
+		M.buf_delete(state.reload_runners[pattern].buf)
 	end
 
-	M.buf_delete = function(buf)
-		if vim.api.nvim_buf_is_valid(buf) then
-			vim.api.nvim_buf_delete(buf, { force = true })
+	-- not running, start new job
+	local job = run_job(exec)
+
+	-- reset state
+	state.reload_runners[pattern] = {
+		buf = job.buf,
+		exec = exec,
+	}
+end
+
+M.run_once = function(exec)
+	assert(state.running)
+
+	--- already running
+	for _, runner in ipairs(state.once_runners) do
+		if runner.exec == exec then
+			return
 		end
 	end
 
-	M.get_runner_by_match = function(filepath)
-		for _, runner in ipairs(M.module.config.runners) do
-			if filepath:match(runner.pattern) ~= nil then
-				return runner
-			end
-		end
-		return nil
-	end
+	local job = run_job(exec)
 
-	M.run_terminal = function(pattern, exec)
-		-- already in state, kill buff
-		-- PERF: reuse buffer, don't recreate
-		if M.state[pattern] then
-			M.buf_delete(M.state[pattern].buf)
-		end
-
-		-- run new job
-		local job = run_job(exec)
-
-		-- reset state
-		M.state[pattern] = {
-			buf = job.buf,
-			exec = exec,
-		}
-	end
-
-	M.start = function()
-		for _, runner in ipairs(M.module.config.runners) do
-			M.run_terminal(runner.pattern, runner.exec)
-		end
-	end
+	table.insert(state.once_runners, {
+		buf = job.buf,
+		exec = exec,
+	})
 end
 
 return M
