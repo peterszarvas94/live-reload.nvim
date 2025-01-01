@@ -1,6 +1,7 @@
 ---@class Runner
 ---@field pattern? string
 ---@field once? boolean
+---@field callback? fun(filename: string): boolean
 ---@field exec string
 
 ---@class Config
@@ -8,14 +9,7 @@
 
 ---@type Config
 local default_config = {
-	runners = {
-		--[[
-		{
-		  pattern = '%.go$',
-		  exec = 'go run main.go',
-		},
-		]]
-	},
+	runners = {},
 }
 
 ---@class Module

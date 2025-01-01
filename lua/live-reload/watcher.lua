@@ -8,7 +8,7 @@ local state = require("live-reload.state")
 
 ---@class Watcher
 ---@field state WatcherState
----@field start fun(config: Config)
+---@field watch fun(config: Config)
 
 ---@type Watcher
 ---@diagnostic disable-next-line: missing-fields
@@ -20,27 +20,7 @@ M.state = {
 	debounce_ms = 1000,
 }
 
-M.start = function(config)
-	assert(not state.running)
-
-	state.running = true
-
-	--- start all runners
-	for _, runner in ipairs(config.runners) do
-		if (runner.pattern and runner.once) or (not runner.pattern and not runner.once) then
-			print('Invalid configuration: set either "pattern" or "once", but not both or neither')
-			goto continue
-		end
-
-		if runner.pattern then
-			utils.run_watch(runner.pattern, runner.exec)
-		elseif runner.once then
-			utils.run_once(runner.exec)
-		end
-
-		::continue::
-	end
-
+M.watch = function(config)
 	--- start file watcher
 	local uv = vim.loop
 	local watcher = uv.new_fs_event()
@@ -53,16 +33,17 @@ M.start = function(config)
 			return
 		end
 
-		-- Filter out Vim's temporary files
+		if not state.running then
+			return
+		end
+
+		-- filter out vim's temporary files
 		if fname:match("4913$") then
 			return
 		end
 
 		local current_time = uv.now()
-		if
-			(current_time - M.state.last_event_time) < M.state.debounce_ms
-			and M.state.last_fname == fname
-		then
+		if (current_time - M.state.last_event_time) < M.state.debounce_ms and M.state.last_fname == fname then
 			return
 		end
 
@@ -71,11 +52,22 @@ M.start = function(config)
 
 		local runner = utils.get_runner_by_match(fname, config)
 
-		vim.schedule(function()
-			if runner ~= nil then
-				utils.run_watch(runner.pattern, runner.exec)
-			end
-		end)
+		if runner ~= nil then
+			vim.schedule(function()
+				utils.keep_win_and_buf(function()
+					utils.run_watch(runner)
+				end)
+			end)
+		end
+
+		local runner2 = utils.get_runner_by_callback(fname, config)
+		if runner2 ~= nil then
+			vim.schedule(function()
+				utils.keep_win_and_buf(function()
+					utils.run_callback(runner2, fname)
+				end)
+			end)
+		end
 	end)
 
 	vim.api.nvim_create_autocmd("VimLeavePre", {

@@ -3,16 +3,11 @@ local state = require("live-reload.state")
 ---@return {buf: number, name: string}[]
 local get_buffers = function()
 	local buffers = {}
-	for _, item in pairs(state.reload_runners) do
+	-- TODO: fix why state is weird???
+	for _, terminal in ipairs(state.terminals) do
 		table.insert(buffers, {
-			buf = item.buf,
-			name = item.buf .. " " .. vim.fn.bufname(item.buf),
-		})
-	end
-	for _, item in ipairs(state.once_runners) do
-		table.insert(buffers, {
-			buf = item.buf,
-			name = item.buf .. " " .. vim.fn.bufname(item.buf),
+			buf = terminal.buf,
+			name = terminal.buf .. " " .. terminal.runner.exec,
 		})
 	end
 	return buffers
@@ -63,7 +58,9 @@ M.picker = function()
 					local selection = action_state.get_selected_entry()
 					actions.close(prompt_buf)
 					-- Jump to the selected buffer
-					vim.api.nvim_set_current_buf(selection.value.buf)
+					if vim.api.nvim_buf_is_valid(selection.value.buf) then
+						vim.api.nvim_set_current_buf(selection.value.buf)
+					end
 				end)
 				return true
 			end,

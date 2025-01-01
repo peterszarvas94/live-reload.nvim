@@ -45,11 +45,12 @@ E.g. `~/my-project/live-reload.lua`:
 ```lua
 ---@class Runner
 ---@field pattern? string
+---@field callback? fun(filename: string): boolean
 ---@field once? boolean
 ---@field exec string
 
 ---@return Runner[]
-local dir = vim.fn.expand("~") .. "/my-project/"
+local dir = vim.fn.expand("~") .. "/projects/test-go/"
 local tw_config = dir .. "tailwind.config.js"
 local tw_input = dir .. "tailwind.base.css"
 local tw_output = dir .. "style.css"
@@ -64,11 +65,20 @@ local runners = {
   },
   {
     once = true,
-    exec = "templ generate --watch",
+    exec = "templ generate -v --watch",
   },
   {
     pattern = "%.go$",
     exec = "go run cmd/*.go",
+  },
+  {
+    callback = function(filename)
+      if some_funcion(filename) then
+        return true
+      end
+      return false
+    end,
+    exec = "myscript.sh",
   },
 }
 

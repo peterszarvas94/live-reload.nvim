@@ -17,27 +17,24 @@ M._setup = function(config)
 			return
 		end
 
-		if not state.running and #config.runners == 0 then
+		if #config.runners == 0 then
 			print("There are no runners set up")
 			return
 		end
 
-		watcher.start(config)
+		utils.start_all(config)
+		watcher.watch(config)
 	end, {})
 
 	vim.api.nvim_create_user_command("LiveReloadStop", function()
-		assert(vim.tbl_count(state.reload_runners) > 0 or #state.once_runners > 0)
-
 		if not state.running then
 			print("Live reload is not running")
 			return
 		end
 
-		for _, terminal in pairs(state.reload_runners) do
-			utils.buf_delete(terminal.buf)
-		end
+		assert(#state.terminals > 0)
 
-		for _, terminal in ipairs(state.once_runners) do
+		for _, terminal in ipairs(state.terminals) do
 			utils.buf_delete(terminal.buf)
 		end
 

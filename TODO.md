@@ -2,4 +2,5 @@
 - [x] fix usecommands: state, show and kill
 - [x] load config from lua file
 - [x] feat: one time runners at start (e.g. --watch jobs)
-- [ ] not just pattern but custom matching function(filename) -> boolean
+- [x] not just pattern but custom matching function(filename) -> boolean
+- [ ] exec can be a function(filename) -> string as well
